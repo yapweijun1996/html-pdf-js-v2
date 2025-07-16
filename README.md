@@ -60,6 +60,7 @@ The `generate` function accepts an `options` object to customize the PDF output.
 | `width`       | number | `210`                 | The width of the content area in the PDF, in `mm`. Defaults to A4 width.                                                               |
 | `windowWidth` | number | `element.scrollWidth` | The width of the source HTML element in pixels. This is used with `width` to calculate the scale. A larger value makes the content smaller. |
 | `scale`       | number | `0.26`                | The scale for `html2canvas` rendering. A higher value can improve the quality of rendered images (like charts) but increases file size. |
+| `usePageSizeFromHtml` | boolean | `false` | If `true`, the PDF page size will be set to the exact dimensions of the HTML element, resulting in a 1:1 scale. This overrides other scaling options. |
 
 ### Example with Custom Scaling
 
@@ -70,6 +71,18 @@ const options = {
   windowWidth: 1400, 
   // Improve image quality
   scale: 0.5 
+};
+await window.htmlToPdf.generate(content, options);
+```
+
+### Example with 1:1 Exact Scaling
+
+To generate a PDF that is the exact same size as your HTML content without any scaling, use the `usePageSizeFromHtml` option.
+
+```javascript
+const options = {
+  filename: 'exact-scale-doc.pdf',
+  usePageSizeFromHtml: true
 };
 await window.htmlToPdf.generate(content, options);
 ```

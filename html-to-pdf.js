@@ -75,27 +75,51 @@
                 ...options
             };
 
-            const pdf = new jsPDF({
-                orientation: 'p',
-                unit: 'mm',
-                format: 'a4'
-            });
-
-            await pdf.html(element, {
-                callback: function(doc) {
-                    doc.save(pdfOptions.filename);
-                },
-                margin: pdfOptions.margin,
-                autoPaging: pdfOptions.autoPaging,
-                x: 0,
-                y: 0,
-                width: pdfOptions.width || 210, // A4 width in mm
-                windowWidth: pdfOptions.windowWidth || element.scrollWidth,
-                html2canvas: {
-                    scale: pdfOptions.scale || 0.26,
+            if (pdfOptions.usePageSizeFromHtml) {
+                // --- 1:1 Scaling Logic (html2canvas -> jsPDF.addImage) ---
+                const canvas = await window.html2canvas(element, {
+                    scale: 1, // Capture at native resolution
                     useCORS: true
-                }
-            });
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const width = canvas.width;
+                const height = canvas.height;
+
+                // Create a PDF with the exact dimensions of the canvas
+                const pdf = new jsPDF({
+                    orientation: width > height ? 'l' : 'p',
+                    unit: 'px',
+                    format: [width, height]
+                });
+
+                pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+                pdf.save(pdfOptions.filename);
+
+            } else {
+                // --- Standard A4/Scaling Logic (jsPDF.html) ---
+                const pdf = new jsPDF({
+                    orientation: 'p',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                await pdf.html(element, {
+                    callback: function(doc) {
+                        doc.save(pdfOptions.filename);
+                    },
+                    margin: pdfOptions.margin,
+                    autoPaging: pdfOptions.autoPaging,
+                    x: 0,
+                    y: 0,
+                    width: pdfOptions.width || 210, // A4 width in mm
+                    windowWidth: pdfOptions.windowWidth || element.scrollWidth,
+                    html2canvas: {
+                        scale: pdfOptions.scale || 0.26,
+                        useCORS: true
+                    }
+                });
+            }
 
         } catch (error) {
             console.error('Failed to generate PDF:', error);
