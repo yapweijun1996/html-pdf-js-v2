@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Demo (A5)</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .document-wrapper {
+            width: 559px; /* A5 width in px at 96 DPI */
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+        }
+        .document-container {
+            padding: 30px;
+        }
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+        .document-header .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .document-header .document-details {
+            text-align: right;
+        }
+        .document-details h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .document-details p {
+            margin: 2px 0;
+            font-size: 12px;
+        }
+        .billing-info {
+            margin-bottom: 30px;
+        }
+        .billing-info h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 5px;
+            font-size: 14px;
+        }
+        .items-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+        .items-table th {
+            background-color: #ecf0f1;
+        }
+        .items-table .text-right {
+            text-align: right;
+        }
+        .totals {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .totals table {
+            width: 60%;
+            margin-left: auto;
+            border-collapse: collapse;
+        }
+        .totals td {
+            padding: 6px;
+            font-size: 12px;
+        }
+        .totals .grand-total {
+            font-weight: bold;
+            font-size: 1.1em;
+            border-top: 2px solid #333;
+        }
+        .footer-notes {
+            margin-top: 30px;
+            font-size: 10px;
+            color: #7f8c8d;
+        }
+        #download-pdf {
+            display: block;
+            width: 180px;
+            margin: 20px auto;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #download-pdf:hover {
+            background-color: #229954;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="document-wrapper">
+        <div id="content-to-print" class="document-container">
+            <div class="document-header">
+                <div class="logo">YourCompany</div>
+                <div class="document-details">
+                    <h2>QUOTATION</h2>
+                    <p>Quote #: Q-2025-003</p>
+                    <p>Date: July 16, 2025</p>
+                    <p>Valid Until: August 15, 2025</p>
+                </div>
+            </div>
+
+            <div class="billing-info">
+                <h3>Prepared for:</h3>
+                <p>
+                    Potential Client Ltd.<br>
+                    789 Business Avenue<br>
+                    Commerce City, USA 54321
+                </p>
+            </div>
+
+            <div class="items-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Standard Website Package</td>
+                            <td class="text-right">$5,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>E-commerce Add-on</td>
+                            <td class="text-right">$2,500.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="totals">
+                <table>
+                    <tr>
+                        <td class="grand-total">Total:</td>
+                        <td class="grand-total text-right">$7,500.00</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="footer-notes">
+                <p><strong>Terms:</strong> 50% upfront, 50% upon completion.</p>
+            </div>
+        </div>
+    </div>
+
+    <button id="download-pdf">Download as PDF</button>
+
+    <script src="jspdf.umd.min.js"></script>
+    <script src="html2canvas.min.js"></script>
+    <script src="html-to-pdf.js"></script>
+    <script>
+        const downloadBtn = document.getElementById('download-pdf');
+        const contentEl = document.getElementById('content-to-print');
+
+        if (downloadBtn && contentEl) {
+            downloadBtn.addEventListener('click', async function() {
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = 'Generating...';
+
+                const options = {
+                    filename: 'Quotation_A5.pdf',
+                    jsPDF: {
+                        orientation: 'p',
+                        unit: 'px',
+                        format: 'a5'
+                    }
+                };
+
+                try {
+                    await window.htmlToPdf.generate(contentEl, options);
+                } catch (error) {
+                    console.error("PDF generation failed from UI.", error);
+                } finally {
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = 'Download as PDF';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

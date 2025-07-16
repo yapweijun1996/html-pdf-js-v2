@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Order Demo (A3)</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .document-wrapper {
+            width: 1123px; /* A3 width in px at 96 DPI */
+            margin: 0px auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+        }
+        .document-container {
+            padding: 40px;
+        }
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+        .document-header .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .document-header .document-details {
+            text-align: right;
+        }
+        .document-details h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .document-details p {
+            margin: 2px 0;
+        }
+        .billing-info {
+            margin-bottom: 40px;
+        }
+        .billing-info h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+        .items-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .items-table th {
+            background-color: #ecf0f1;
+        }
+        .items-table .text-right {
+            text-align: right;
+        }
+        .totals {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .totals table {
+            width: 50%;
+            margin-left: auto;
+            border-collapse: collapse;
+        }
+        .totals td {
+            padding: 8px;
+        }
+        .totals .grand-total {
+            font-weight: bold;
+            font-size: 1.2em;
+            border-top: 2px solid #333;
+        }
+        .footer-notes {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        #download-pdf {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #download-pdf:hover {
+            background-color: #229954;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="document-wrapper">
+        <div id="content-to-print" class="document-container">
+            <div class="document-header">
+                <div class="logo">YourCompany</div>
+                <div class="document-details">
+                    <h2>PURCHASE ORDER</h2>
+                    <p>PO #: PO-2025-001</p>
+                    <p>Date: July 16, 2025</p>
+                </div>
+            </div>
+
+            <div class="billing-info">
+                <h3>Vendor:</h3>
+                <p>
+                    Global Supplies Inc.<br>
+                    456 Industrial Park<br>
+                    Metropolis, USA 67890
+                </p>
+            </div>
+
+            <div class="items-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>HW-001</td>
+                            <td>Industrial Grade Widgets</td>
+                            <td>200</td>
+                            <td>$50.00</td>
+                            <td class="text-right">$10,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>HW-002</td>
+                            <td>Heavy-Duty Sprockets</td>
+                            <td>50</td>
+                            <td>$150.00</td>
+                            <td class="text-right">$7,500.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="totals">
+                <table>
+                    <tr>
+                        <td>Subtotal:</td>
+                        <td class="text-right">$17,500.00</td>
+                    </tr>
+                    <tr>
+                        <td class="grand-total">Total:</td>
+                        <td class="grand-total text-right">$17,500.00</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="footer-notes">
+                <p><strong>Delivery Instructions:</strong> Please deliver to the main warehouse receiving dock.</p>
+            </div>
+        </div>
+    </div>
+
+    <button id="download-pdf">Download as PDF</button>
+
+    <script src="jspdf.umd.min.js"></script>
+    <script src="html2canvas.min.js"></script>
+    <script src="html-to-pdf.js"></script>
+    <script>
+        const downloadBtn = document.getElementById('download-pdf');
+        const contentEl = document.getElementById('content-to-print');
+
+        if (downloadBtn && contentEl) {
+            downloadBtn.addEventListener('click', async function() {
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = 'Generating...';
+
+                const options = {
+                    filename: 'Purchase_Order_A3.pdf',
+                    jsPDF: {
+                        orientation: 'l',
+                        unit: 'px',
+                        format: 'a3'
+                    }
+                };
+
+                try {
+                    await window.htmlToPdf.generate(contentEl, options);
+                } catch (error) {
+                    console.error("PDF generation failed from UI.", error);
+                } finally {
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = 'Download as PDF';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

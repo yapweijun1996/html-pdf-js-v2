@@ -99,7 +99,13 @@
             const { jsPDF } = window.jspdf;
             const elWidth = element.scrollWidth;
             const elHeight = element.scrollHeight;
-            const pdf = new jsPDF({ ...pdfOptions.jsPDF, format: [elWidth, elHeight] });
+
+            // --- FIX for Blank Second Page ---
+            // jsPDF can add a blank second page when the content height perfectly matches the page
+            // height. This is often due to floating-point inaccuracies or its internal pagination logic.
+            // By adding a small buffer (1 pixel) to the page height, we ensure the content fits
+            // comfortably on one page without triggering an unnecessary overflow.
+            const pdf = new jsPDF({ ...pdfOptions.jsPDF, format: [elWidth, elHeight + 1] });
 
             if (needsHtml2Canvas) {
                 onProgress('Capturing elements to render as images...');
@@ -120,6 +126,7 @@
 
             onProgress('Rendering PDF from HTML...');
             await pdf.html(element, {
+                autoPaging: 'text', // Avoids automatic page breaks.
                 width: elWidth,
                 windowWidth: elWidth,
                 callback: function(doc) {

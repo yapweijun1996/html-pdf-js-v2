@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Order Demo (A4)</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .document-wrapper {
+            width: 794px; /* A4 width in px at 96 DPI */
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+        }
+        .document-container {
+            padding: 40px;
+        }
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+        .document-header .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .document-header .document-details {
+            text-align: right;
+        }
+        .document-details h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .document-details p {
+            margin: 2px 0;
+        }
+        .billing-info {
+            margin-bottom: 40px;
+        }
+        .billing-info h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+        .items-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .items-table th {
+            background-color: #ecf0f1;
+        }
+        .footer-notes {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        #download-pdf {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #download-pdf:hover {
+            background-color: #229954;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="document-wrapper">
+        <div id="content-to-print" class="document-container">
+            <div class="document-header">
+                <div class="logo">YourCompany</div>
+                <div class="document-details">
+                    <h2>DELIVERY ORDER</h2>
+                    <p>DO #: DO-2025-002</p>
+                    <p>Date: July 16, 2025</p>
+                </div>
+            </div>
+
+            <div class="billing-info">
+                <h3>Ship To:</h3>
+                <p>
+                    John Doe<br>
+                    123 Main Street<br>
+                    Anytown, USA 12345
+                </p>
+            </div>
+
+            <div class="items-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PROD-A</td>
+                            <td>Product A</td>
+                            <td>10</td>
+                        </tr>
+                        <tr>
+                            <td>PROD-B</td>
+                            <td>Product B</td>
+                            <td>5</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="footer-notes">
+                <p><strong>Received By:</strong> _________________________</p>
+                <p><strong>Date:</strong> _________________________</p>
+            </div>
+        </div>
+    </div>
+
+    <button id="download-pdf">Download as PDF</button>
+
+    <script src="jspdf.umd.min.js"></script>
+    <script src="html2canvas.min.js"></script>
+    <script src="html-to-pdf.js"></script>
+    <script>
+        const downloadBtn = document.getElementById('download-pdf');
+        const contentEl = document.getElementById('content-to-print');
+
+        if (downloadBtn && contentEl) {
+            downloadBtn.addEventListener('click', async function() {
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = 'Generating...';
+
+                const options = {
+                    filename: 'Delivery_Order_A4.pdf',
+                    jsPDF: {
+                        orientation: 'p',
+                        unit: 'px',
+                        format: 'a4'
+                    }
+                };
+
+                try {
+                    await window.htmlToPdf.generate(contentEl, options);
+                } catch (error) {
+                    console.error("PDF generation failed from UI.", error);
+                } finally {
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = 'Download as PDF';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
