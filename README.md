@@ -13,64 +13,117 @@ This project is a simple, vanilla JavaScript solution for converting an HTML ele
 ## File Structure
 
 - **`index.html`**: The main entry point that links to all available demos.
-- **`demo001.html`**: A demo page showcasing a business report with charts and tables.
-- **`demo002.html`**: A demo page showcasing a standard invoice layout.
+- **`demo001.html` - `demo006.html`**: Demo pages showcasing various layouts.
 - **`html-to-pdf.js`**: The core JavaScript library that handles the PDF generation. It exposes a global `htmlToPdf` object with a `generate` method.
 
-## How to Use
+## Quickstart: How to Use
 
-1.  **Open `index.html` in your browser.** This will show you a list of available demos.
-2.  **Click on a demo link** to see it in action.
-3.  **Click the "Download as PDF" button** on any demo page to generate the PDF.
+Follow these steps to add PDF generation to your project.
 
-To use the library in your own project:
+### 1. Include the Script
 
-1.  **Include the script:** Add the `html-to-pdf.js` script to your HTML file.
-    ```html
-    <script src="html-to-pdf.js"></script>
-    ```
+Add the `html-to-pdf.js` script to your HTML file. Make sure the path is correct.
 
-2.  **Create a button and content:** Add a button to trigger the download and an element that contains the content you want to convert.
-    ```html
-    <div id="my-content">...</div>
-    <button id="download-btn">Download PDF</button>
-    ```
+```html
+<script src="html-to-pdf.js"></script>
+```
 
-3.  **Write the script:** Add a script to call the `htmlToPdf.generate` function.
-    ```javascript
-    const downloadBtn = document.getElementById('download-btn');
-    const content = document.getElementById('my-content');
+### 2. Create Your Content and a Trigger Button
 
-    downloadBtn.addEventListener('click', async function() {
-      /**
-       * The `generate` function takes two arguments:
-       * 1. The HTML element to convert.
-       * 2. An options object.
-       *
-       * The `renderSelectors` option is an array of CSS selectors for any elements
-       * that should be rendered as images (e.g., charts, complex divs).
-       */
-      const options = {
+Create the HTML content you want to convert and a button to trigger the PDF download.
+
+```html
+<!-- This is the content that will be converted to a PDF -->
+<div id="my-content">
+  <h1>My Document</h1>
+  <p>This is some text that will be selectable in the PDF.</p>
+  <!-- This chart will be rendered as an image to preserve its quality -->
+  <canvas id="my-chart"></canvas>
+</div>
+
+<!-- This button will trigger the PDF generation -->
+<button id="download-btn">Download PDF</button>
+```
+
+### 3. Write the Script to Generate the PDF
+
+Add a script to call the `htmlToPdf.generate` function when the button is clicked.
+
+```javascript
+// Wait for the DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function () {
+  const downloadBtn = document.getElementById('download-btn');
+  const content = document.getElementById('my-content');
+
+  downloadBtn.addEventListener('click', async function () {
+    console.log('Generating PDF...');
+
+    // The generate function returns a Promise, so we use async/await
+    try {
+      await window.htmlToPdf.generate(content, {
         filename: 'my-document.pdf',
-        renderSelectors: ['#my-chart', '.some-other-element']
-      };
-      await window.htmlToPdf.generate(content, options);
-    });
-    ```
+        renderSelectors: ['#my-chart'] // Specify elements to render as images
+      });
+      console.log('PDF generated successfully!');
+    } catch (error) {
+      console.error('An error occurred while generating the PDF:', error);
+    }
+  });
+});
+```
+
+## API Overview
+
+The library exposes a single global function: `window.htmlToPdf.generate(element, options)`.
+
+-   **`element`** (Required)
+    -   **Type:** `HTMLElement`
+    -   **Description:** The HTML element you want to convert into a PDF.
+
+-   **`options`** (Optional)
+    -   **Type:** `Object`
+    -   **Description:** An object containing configuration options.
+
+### Options Details
+
+| Option            | Type      | Default                 | Description                                                                                                                                 |
+| ----------------- | --------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filename`        | `String`  | `'document.pdf'`        | The name of the downloaded PDF file.                                                                                                        |
+| `renderSelectors` | `Array`   | `[]`                    | An array of CSS selectors for elements that should be rendered as images (e.g., `<canvas>`, complex `<div>`s).                               |
+| `page`            | `Object`  | `{...}`                 | An object to configure the PDF page settings. See `jsPDF` documentation for more details.                                                   |
+| `page.margin`     | `Number`  | `15`                    | The margin (in mm) for all sides of the PDF page.                                                                                           |
+| `page.orientation`| `String`  | `'portrait'`            | The page orientation. Can be `'portrait'` or `'landscape'`.                                                                                 |
+| `page.format`     | `String`  | `'a4'`                  | The page format (e.g., `'a4'`, `'letter'`).                                                                                                 |
+
+## Demo Walkthrough
+
+The best way to learn is by example. Check out the included demo files:
+
+-   **`demo001.html`**: Shows how to render a business report with a Chart.js chart. Notice how `renderSelectors: ['#myChart']` is used to ensure the chart is captured perfectly.
+-   **`demo003.html`**: A standard invoice layout. This is a good example of a text-heavy document.
+-   **`demo006.html`**: Demonstrates how to handle multiple complex elements by passing multiple selectors in the `renderSelectors` array.
+
+To run them, open `index.html` in your browser and click the links.
 
 ## How It Works: The Hybrid Approach
 
-This script uses a hybrid approach to create high-quality PDFs:
+This script uses a clever hybrid approach to create high-quality PDFs:
 
-1.  **Image Rendering:** For any element specified in `renderSelectors`, the script first captures it as a PNG image. It then replaces the element in the live DOM with a placeholder `<div>` of the exact same size. This is done to preserve the page layout.
-2.  **Text Rendering:** It then uses `jsPDF.html()` to convert the modified HTML (with the placeholders) into a text-based PDF. This ensures all text is selectable and searchable.
-3.  **Image Placement:** Finally, it adds the captured images back into the PDF at the locations of their corresponding placeholders.
-4.  **DOM Restoration:** The script cleans up after itself by restoring the original elements to the live page.
+1.  **Capture Images:** It finds all elements matching the `renderSelectors` and captures them as PNG images using `html2canvas`.
+2.  **Create Placeholders:** It replaces each of those elements in the live DOM with an empty `<div>` that has the exact same dimensions. This preserves the layout perfectly.
+3.  **Render Text PDF:** It then uses `jsPDF.html()` to convert the modified HTML into a PDF. All text remains selectable and searchable.
+4.  **Add Images Back:** It adds the captured images back into the PDF at the precise locations of their placeholders.
+5.  **Restore the DOM:** Finally, it restores the original elements to the webpage, leaving it exactly as it was.
+
+## Troubleshooting and Tips
+
+-   **CORS Issues:** If you are loading images from other domains, you may run into CORS errors. Make sure the images are served with the correct `Access-Control-Allow-Origin` headers.
+-   **Selectors Not Matching:** The CSS selectors in `renderSelectors` must be exact. Use your browser's developer tools to double-check the IDs and classes.
+-   **Content Overflow:** If your content is wider than the PDF page, it may get cut off. You can switch to `'landscape'` orientation or adjust your CSS.
 
 ## Dependencies
 
 This project relies on the following third-party libraries, which are loaded dynamically from a CDN:
 
-- **[jsPDF](https://github.com/parallax/jsPDF)**: A library to generate PDFs in JavaScript.
-- **[html2canvas](https://html2canvas.hertzen.com/)**: Used to capture a high-quality image of the HTML content.
-- **[Chart.js](https://www.chartjs.org/)**: Used in `demo001.html` to render the demo chart.
+-   **[jsPDF](https://github.com/parallax/jsPDF)**: A library to generate PDFs in JavaScript.
+-   **[html2canvas](https://html2canvas.hertzen.com/)**: Used to capture a high-quality image of the HTML content.
