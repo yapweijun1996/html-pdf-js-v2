@@ -235,9 +235,31 @@
                 downloadBtn.disabled = true;
                 downloadBtn.textContent = 'Generating...';
 
+                // --- PDF Generation Options ---
+                // Here we demonstrate the new, more powerful configuration.
+                // We can now override both the jsPDF constructor options and
+                // the html-to-pdf processing options.
                 const options = {
-                    filename: 'Business_Report.pdf',
-                    chartSelector: '#revenueChart'
+                    filename: 'Business_Report_Landscape.pdf',
+                    renderSelectors: ['#revenueChart'],
+                    
+                    // Example: Override jsPDF default options for a landscape report.
+                    jsPDF: {
+                        orientation: 'l', // 'p' for portrait, 'l' for landscape
+                        unit: 'px',
+                        format: 'a4'
+                    },
+
+                    // Example: Customize the html-to-pdf processing.
+                    // Here, we adjust the margins for the landscape layout.
+                    html: {
+                        autoPaging: 'text',
+                        margin: [40, 60, 40, 60], // Top, Right, Bottom, Left
+                        x: 0,
+                        y: 0,
+                        windowWidth: reportEl.scrollWidth,
+                        width: reportEl.clientWidth
+                    }
                 };
 
                 try {

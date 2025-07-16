@@ -4,9 +4,9 @@ This project is a simple, vanilla JavaScript solution for converting an HTML ele
 
 ## Features
 
-- **HTML to PDF Conversion:** Converts a specified HTML element to a PDF document.
-- **Dynamic Dependency Loading:** Loads required libraries (`jspdf` and `html2canvas`) from a CDN.
-- **1:1 Pixel-Perfect Output:** Generates a PDF that is the exact same size as the source HTML content, with no scaling.
+- **Hybrid PDF Generation:** Creates a PDF with selectable text and high-fidelity images, getting the best of both worlds.
+- **Handles Complex Elements:** Can correctly render dynamic content like charts (`<canvas>`) or any other specified element as an image.
+- **Configurable:** Use the `renderSelectors` option to specify which elements should be treated as images.
 - **Dynamic Dependency Loading:** Loads required libraries (`jspdf` and `html2canvas`) from a CDN.
 - **No Build Step Required:** Works directly in the browser without needing Node.js, npm, or any other build tools.
 
@@ -42,13 +42,30 @@ To use the library in your own project:
     const content = document.getElementById('my-content');
 
     downloadBtn.addEventListener('click', async function() {
-      // You can optionally pass a filename
+      /**
+       * The `generate` function takes two arguments:
+       * 1. The HTML element to convert.
+       * 2. An options object.
+       *
+       * The `renderSelectors` option is an array of CSS selectors for any elements
+       * that should be rendered as images (e.g., charts, complex divs).
+       */
       const options = {
-        filename: 'my-document.pdf'
+        filename: 'my-document.pdf',
+        renderSelectors: ['#my-chart', '.some-other-element']
       };
       await window.htmlToPdf.generate(content, options);
     });
     ```
+
+## How It Works: The Hybrid Approach
+
+This script uses a hybrid approach to create high-quality PDFs:
+
+1.  **Image Rendering:** For any element specified in `renderSelectors`, the script first captures it as a PNG image. It then replaces the element in the live DOM with a placeholder `<div>` of the exact same size. This is done to preserve the page layout.
+2.  **Text Rendering:** It then uses `jsPDF.html()` to convert the modified HTML (with the placeholders) into a text-based PDF. This ensures all text is selectable and searchable.
+3.  **Image Placement:** Finally, it adds the captured images back into the PDF at the locations of their corresponding placeholders.
+4.  **DOM Restoration:** The script cleans up after itself by restoring the original elements to the live page.
 
 ## Dependencies
 
