@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Demo</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .invoice-wrapper {
+            max-width: 800px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+        }
+        .invoice-container {
+            padding: 40px;
+        }
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+        .invoice-header .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .invoice-header .invoice-details {
+            text-align: right;
+        }
+        .invoice-details h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .invoice-details p {
+            margin: 2px 0;
+        }
+        .billing-info {
+            margin-bottom: 40px;
+        }
+        .billing-info h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+        .items-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .items-table th {
+            background-color: #ecf0f1;
+        }
+        .items-table .text-right {
+            text-align: right;
+        }
+        .totals {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .totals table {
+            width: 50%;
+            margin-left: auto;
+            border-collapse: collapse;
+        }
+        .totals td {
+            padding: 8px;
+        }
+        .totals .grand-total {
+            font-weight: bold;
+            font-size: 1.2em;
+            border-top: 2px solid #333;
+        }
+        .footer-notes {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        #download-pdf {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #download-pdf:hover {
+            background-color: #229954;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="invoice-wrapper">
+        <div id="content-to-print" class="invoice-container">
+            <div class="invoice-header">
+                <div class="logo">YourLogo</div>
+                <div class="invoice-details">
+                    <h2>INVOICE</h2>
+                    <p>Invoice #: INV-00123</p>
+                    <p>Date: July 16, 2025</p>
+                    <p>Due Date: August 15, 2025</p>
+                </div>
+            </div>
+
+            <div class="billing-info">
+                <h3>Bill To:</h3>
+                <p>
+                    John Doe<br>
+                    123 Main Street<br>
+                    Anytown, USA 12345
+                </p>
+            </div>
+
+            <div class="items-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item Description</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Web Design Services</td>
+                            <td>1</td>
+                            <td>$2,500.00</td>
+                            <td class="text-right">$2,500.00</td>
+                        </tr>
+                        <tr>
+                            <td>Hosting (1 Year)</td>
+                            <td>1</td>
+                            <td>$300.00</td>
+                            <td class="text-right">$300.00</td>
+                        </tr>
+                        <tr>
+                            <td>Domain Name (1 Year)</td>
+                            <td>1</td>
+                            <td>$15.00</td>
+                            <td class="text-right">$15.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="totals">
+                <table>
+                    <tr>
+                        <td>Subtotal:</td>
+                        <td class="text-right">$2,815.00</td>
+                    </tr>
+                    <tr>
+                        <td>Tax (8%):</td>
+                        <td class="text-right">$225.20</td>
+                    </tr>
+                    <tr>
+                        <td class="grand-total">Total:</td>
+                        <td class="grand-total text-right">$3,040.20</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="footer-notes">
+                <p><strong>Terms & Conditions:</strong> Payment is due within 30 days. Late payments are subject to a fee.</p>
+                <p>Thank you for your business!</p>
+            </div>
+        </div>
+    </div>
+
+    <button id="download-pdf">Download as PDF</button>
+
+    <script src="html-to-pdf.js"></script>
+    <script>
+        const downloadBtn = document.getElementById('download-pdf');
+        const invoiceEl = document.getElementById('content-to-print');
+
+        if (downloadBtn && invoiceEl) {
+            downloadBtn.addEventListener('click', async function() {
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = 'Generating...';
+
+                const options = {
+                    filename: 'Invoice_INV-00123.pdf'
+                };
+
+                try {
+                    await window.htmlToPdf.generate(invoiceEl, options);
+                } catch (error) {
+                    console.error("PDF generation failed from UI.", error);
+                } finally {
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = 'Download as PDF';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

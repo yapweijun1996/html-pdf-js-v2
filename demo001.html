@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quarterly Business Report</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .report-wrapper {
+            max-width: 800px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+        .report-container {
+            padding: 40px;
+            background-color: #fff;
+        }
+        .report-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .report-header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #2c3e50;
+        }
+        .report-header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+        .kpi-section {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .kpi {
+            flex: 1;
+        }
+        .kpi h3 {
+            margin: 0;
+            font-size: 24px;
+            color: #2980b9;
+        }
+        .kpi p {
+            margin: 5px 0 0;
+            color: #95a5a6;
+        }
+        .chart-section {
+            margin-bottom: 40px;
+        }
+        .chart-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #34495e;
+        }
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #ecf0f1;
+            font-weight: bold;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .report-footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #bdc3c7;
+        }
+        #download-pdf {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #download-pdf:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="report-wrapper">
+        <div id="content-to-print" class="report-container">
+            <div class="report-header">
+                <h1>Quarterly Business Report</h1>
+                <p>Q3 2025 (July - September)</p>
+            </div>
+
+            <div class="kpi-section">
+                <div class="kpi">
+                    <h3>$1,250,000</h3>
+                    <p>Total Revenue</p>
+                </div>
+                <div class="kpi">
+                    <h3>452</h3>
+                    <p>New Customers</p>
+                </div>
+                <div class="kpi">
+                    <h3 style="color: #27ae60;">+15%</h3>
+                    <p>Quarterly Growth</p>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h2>Revenue by Source</h2>
+                <canvas id="revenueChart"></canvas>
+            </div>
+
+            <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product/Service</th>
+                            <th>Units Sold</th>
+                            <th>Revenue</th>
+                            <th>YoY Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Enterprise Suite</td>
+                            <td>150</td>
+                            <td>$750,000</td>
+                            <td style="color: #27ae60;">+12%</td>
+                        </tr>
+                        <tr>
+                            <td>Pro License</td>
+                            <td>800</td>
+                            <td>$400,000</td>
+                            <td style="color: #27ae60;">+25%</td>
+                        </tr>
+                        <tr>
+                            <td>Basic Plan</td>
+                            <td>1200</td>
+                            <td>$90,000</td>
+                            <td style="color: #c0392b;">-5%</td>
+                        </tr>
+                        <tr>
+                            <td>Consulting</td>
+                            <td>50</td>
+                            <td>$10,000</td>
+                            <td style="color: #27ae60;">+8%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="report-footer">
+                <p>Confidential & Proprietary | Generated on: <span id="generation-date"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <button id="download-pdf">Download as PDF (Auto Scale)</button>
+    <button id="download-pdf-custom">Download as PDF (Custom Scale)</button>
+
+    <!-- Load the new PDF library -->
+    <script src="html-to-pdf.js"></script>
+    <!-- Load Chart.js for the demo chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // --- Page-Specific Logic for the Report Demo ---
+
+        // 1. Set generation date
+        const dateEl = document.getElementById('generation-date');
+        if (dateEl) {
+            dateEl.textContent = new Date().toLocaleDateString();
+        }
+
+        // 2. Create Chart
+        const chartData = {
+            labels: ['Direct Sales', 'Online', 'Partners'],
+            datasets: [{
+                label: 'Revenue Source',
+                data: [650000, 400000, 200000],
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.8)',
+                    'rgba(46, 204, 113, 0.8)',
+                    'rgba(241, 196, 15, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(52, 152, 219, 1)',
+                    'rgba(46, 204, 113, 1)',
+                    'rgba(241, 196, 15, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: chartData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+
+        // 3. Setup Download Buttons
+        const reportEl = document.getElementById('content-to-print');
+        const downloadBtn = document.getElementById('download-pdf');
+        const downloadBtnCustom = document.getElementById('download-pdf-custom');
+
+        async function handleDownload(button, options) {
+            if (!button || !reportEl) return;
+
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Generating...';
+
+            try {
+                await window.htmlToPdf.generate(reportEl, options);
+            } catch (error) {
+                console.error("PDF generation failed from UI.", error);
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+
+        // Button 1: Default auto-scaling
+        downloadBtn.addEventListener('click', () => {
+            handleDownload(downloadBtn, {
+                filename: 'Business_Report_Auto_Scale.pdf'
+            });
+        });
+
+        // Button 2: Custom scaling to make content larger
+        downloadBtnCustom.addEventListener('click', () => {
+            handleDownload(downloadBtnCustom, {
+                filename: 'Business_Report_Custom_Scale.pdf',
+                // Make the content appear larger by telling jsPDF the source is narrower than it is.
+                // This makes jsPDF scale it up to fit the PDF page width.
+                windowWidth: 1400, // A higher value makes the content appear smaller.
+                scale: 0.5 // A higher value increases quality and size.
+            });
+        });
+    </script>
+</body>
+</html>
