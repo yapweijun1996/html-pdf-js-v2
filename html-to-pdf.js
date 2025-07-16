@@ -60,70 +60,75 @@
         return dependencyPromise;
     }
 
-    // --- CORE PDF GENERATION FUNCTION with async/await ---
+    // --- CORE PDF GENERATION FUNCTION with Simplified Hybrid Approach ---
     async function generate(element, options) {
         try {
             await loadDependencies();
-            
+
             const { jsPDF } = window.jspdf;
-            
-            // Default options
+            const pdf = new jsPDF({
+                orientation: 'p',
+                unit: 'pt',
+                format: 'a4'
+            });
+
             const pdfOptions = {
                 filename: 'download.pdf',
-                margin: [10, 10, 10, 10], // top, right, bottom, left
-                autoPaging: 'text',
+                chartSelector: null, // e.g., '#revenueChart'
                 ...options
             };
 
-            if (pdfOptions.usePageSizeFromHtml) {
-                // --- 1:1 Scaling Logic (html2canvas -> jsPDF.addImage) ---
-                const canvas = await window.html2canvas(element, {
-                    scale: 1, // Capture at native resolution
-                    useCORS: true
-                });
-                
-                const imgData = canvas.toDataURL('image/png');
-                const width = canvas.width;
-                const height = canvas.height;
-
-                // Create a PDF with the exact dimensions of the canvas
-                const pdf = new jsPDF({
-                    orientation: width > height ? 'l' : 'p',
-                    unit: 'px',
-                    format: [width, height]
-                });
-
-                pdf.addImage(imgData, 'PNG', 0, 0, width, height);
-                pdf.save(pdfOptions.filename);
-
-            } else {
-                // --- Standard A4/Scaling Logic (jsPDF.html) ---
-                const pdf = new jsPDF({
-                    orientation: 'p',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-
-                await pdf.html(element, {
-                    callback: function(doc) {
-                        doc.save(pdfOptions.filename);
-                    },
-                    margin: pdfOptions.margin,
-                    autoPaging: pdfOptions.autoPaging,
-                    x: 0,
-                    y: 0,
-                    width: pdfOptions.width || 210, // A4 width in mm
-                    windowWidth: pdfOptions.windowWidth || element.scrollWidth,
-                    html2canvas: {
-                        scale: pdfOptions.scale || 0.26,
-                        useCORS: true
-                    }
-                });
+            const chartCanvas = pdfOptions.chartSelector ? element.querySelector(pdfOptions.chartSelector) : null;
+            
+            // If a chart exists, we handle it separately.
+            // We get its position and hide its parent container for the main render.
+            let chartContainer = null;
+            if (chartCanvas) {
+                chartContainer = chartCanvas.parentElement;
+                chartContainer.style.display = 'none';
             }
+
+            // --- Text-based rendering for main content ---
+            await pdf.html(element, {
+                autoPaging: 'text',
+                margin: [40, 40, 40, 40],
+                x: 0,
+                y: 0,
+                windowWidth: element.scrollWidth,
+                width: element.clientWidth
+            });
+
+            // --- Add the chart image directly from canvas ---
+            if (chartCanvas) {
+                // Unhide the container to get original position
+                chartContainer.style.display = 'block';
+
+                const chartImgData = chartCanvas.toDataURL('image/png');
+                
+                // Calculate position to add the chart
+                const chartRect = chartCanvas.getBoundingClientRect();
+                const containerRect = element.getBoundingClientRect();
+                
+                const x = chartRect.left - containerRect.left + 40; // + margin
+                const y = chartRect.top - containerRect.top + 40; // + margin
+                
+                const width = chartRect.width * 0.75; // 1px = 0.75pt
+                const height = chartRect.height * 0.75;
+
+                pdf.addImage(chartImgData, 'PNG', x, y, width, height);
+            }
+
+            pdf.save(pdfOptions.filename);
 
         } catch (error) {
             console.error('Failed to generate PDF:', error);
             alert('Could not generate PDF. Please check the console for errors.');
+        } finally {
+            // Ensure chart container is visible again if something fails
+            const chartCanvas = options.chartSelector ? element.querySelector(options.chartSelector) : null;
+            if (chartCanvas) {
+                chartCanvas.parentElement.style.display = 'block';
+            }
         }
     }
 

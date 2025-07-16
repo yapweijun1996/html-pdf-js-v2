@@ -177,9 +177,7 @@
         </div>
     </div>
 
-    <button id="download-pdf">Download as PDF (Auto Scale)</button>
-    <button id="download-pdf-custom">Download as PDF (Custom Scale)</button>
-    <button id="download-pdf-exact">Download as PDF (1:1 Scale)</button>
+    <button id="download-pdf">Download as PDF</button>
 
     <!-- Load the new PDF library -->
     <script src="html-to-pdf.js"></script>
@@ -227,54 +225,31 @@
             }
         });
 
-        // 3. Setup Download Buttons
-        const reportEl = document.getElementById('content-to-print');
+        // 3. Setup Download Button
         const downloadBtn = document.getElementById('download-pdf');
-        const downloadBtnCustom = document.getElementById('download-pdf-custom');
-        const downloadBtnExact = document.getElementById('download-pdf-exact');
+        const reportEl = document.getElementById('content-to-print');
 
-        async function handleDownload(button, options) {
-            if (!button || !reportEl) return;
+        if (downloadBtn && reportEl) {
+            downloadBtn.addEventListener('click', async function() {
+                const originalText = downloadBtn.textContent;
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = 'Generating...';
 
-            const originalText = button.textContent;
-            button.disabled = true;
-            button.textContent = 'Generating...';
+                const options = {
+                    filename: 'Business_Report.pdf',
+                    chartSelector: '#revenueChart'
+                };
 
-            try {
-                await window.htmlToPdf.generate(reportEl, options);
-            } catch (error) {
-                console.error("PDF generation failed from UI.", error);
-            } finally {
-                button.disabled = false;
-                button.textContent = originalText;
-            }
+                try {
+                    await window.htmlToPdf.generate(reportEl, options);
+                } catch (error) {
+                    console.error("PDF generation failed from UI.", error);
+                } finally {
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = originalText;
+                }
+            });
         }
-
-        // Button 1: Default auto-scaling
-        downloadBtn.addEventListener('click', () => {
-            handleDownload(downloadBtn, {
-                filename: 'Business_Report_Auto_Scale.pdf'
-            });
-        });
-
-        // Button 2: Custom scaling to make content larger
-        downloadBtnCustom.addEventListener('click', () => {
-            handleDownload(downloadBtnCustom, {
-                filename: 'Business_Report_Custom_Scale.pdf',
-                // Make the content appear larger by telling jsPDF the source is narrower than it is.
-                // This makes jsPDF scale it up to fit the PDF page width.
-                windowWidth: 1400, // A higher value makes the content appear smaller.
-                scale: 0.5 // A higher value increases quality and size.
-            });
-        });
-
-        // Button 3: Exact 1:1 scaling
-        downloadBtnExact.addEventListener('click', () => {
-            handleDownload(downloadBtnExact, {
-                filename: 'Business_Report_Exact_Scale.pdf',
-                usePageSizeFromHtml: true
-            });
-        });
     </script>
 </body>
 </html>
