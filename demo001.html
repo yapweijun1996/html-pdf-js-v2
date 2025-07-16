@@ -180,6 +180,8 @@
     <button id="download-pdf">Download as PDF</button>
 
     <!-- Load the new PDF library -->
+    <script src="jspdf.umd.min.js"></script>
+    <script src="html2canvas.min.js"></script>
     <script src="html-to-pdf.js"></script>
     <!-- Load Chart.js for the demo chart -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -242,24 +244,23 @@
                 const options = {
                     filename: 'Business_Report_Landscape.pdf',
                     renderSelectors: ['#revenueChart'],
+
+                    // Example: Use the onProgress callback to update the UI.
+                    onProgress: function(status) {
+                        console.log('PDF Generation Status:', status);
+                        downloadBtn.textContent = status;
+                    },
                     
                     // Example: Override jsPDF default options for a landscape report.
                     jsPDF: {
-                        orientation: 'l', // 'p' for portrait, 'l' for landscape
+                        orientation: 'p', // 'p' for portrait, 'l' for landscape
                         unit: 'px',
                         format: 'a4'
                     },
 
-                    // Example: Customize the html-to-pdf processing.
-                    // Here, we adjust the margins for the landscape layout.
-                    html: {
-                        autoPaging: 'text',
-                        margin: [40, 60, 40, 60], // Top, Right, Bottom, Left
-                        x: 0,
-                        y: 0,
-                        windowWidth: reportEl.scrollWidth,
-                        width: reportEl.clientWidth
-                    }
+                    // The new implementation uses a simplified options structure.
+                    // The `html` key is no longer needed as jsPDF's new `html()`
+                    // method handles layout automatically.
                 };
 
                 try {
